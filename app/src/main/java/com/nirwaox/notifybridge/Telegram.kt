@@ -17,14 +17,32 @@ object Telegram {
         val chat = Prefs.chatId(ctx)
         if (token.isBlank() || chat.isBlank()) return false
         return try {
-            val body = "chat_id=${URLEncoder.encode(chat, "UTF-8")}" +
-                "&parse_mode=HTML&disable_web_page_preview=true" +
-                "&text=${URLEncoder.encode(text.take(4000), "UTF-8")}"
-            post(api(ctx, "sendMessage"), body) != null
+            post(api(ctx, "sendMessage"), messageBody(chat, text))?.optBoolean("ok", false) == true
         } catch (e: Exception) {
             false
         }
     }
+
+    /** Same as [sendMessage] but returns a human-readable result for diagnostics. */
+    fun sendMessageDetailed(ctx: Context, text: String): String {
+        val token = Prefs.botToken(ctx)
+        val chat = Prefs.chatId(ctx)
+        if (token.isBlank()) return "Gagal: bot token kosong — isi di form konfigurasi."
+        if (chat.isBlank()) return "Gagal: chat ID kosong — isi di form konfigurasi."
+        return try {
+            val res = post(api(ctx, "sendMessage"), messageBody(chat, text))
+                ?: return "Gagal: tidak ada respons dari Telegram (cek koneksi internet)."
+            if (res.optBoolean("ok", false)) "Terkirim ke Telegram ✅"
+            else "Gagal (${res.optInt("error_code")}): ${res.optString("description")}"
+        } catch (e: Exception) {
+            "Gagal: ${e.message}"
+        }
+    }
+
+    private fun messageBody(chat: String, text: String) =
+        "chat_id=${URLEncoder.encode(chat, "UTF-8")}" +
+            "&parse_mode=HTML&disable_web_page_preview=true" +
+            "&text=${URLEncoder.encode(text.take(4000), "UTF-8")}"
 
     /** Long-poll updates. Returns raw JSON response or null. */
     fun getUpdates(ctx: Context, offset: Long, timeoutSec: Int = 30): JSONObject? {
@@ -48,8 +66,8 @@ object Telegram {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             conn.outputStream.use { it.write(body.toByteArray()) }
             val stream = if (conn.responseCode in 200..299) conn.inputStream else conn.errorStream
-            val text = stream?.bufferedReader()?.use(BufferedReader::readText) ?: return null
-            JSONObject(text)
+            val textRes = stream?.bufferedReader()?.use(BufferedReader::readText) ?: return null
+            JSONObject(textRes)
         } catch (e: Exception) {
             null
         } finally {

@@ -1,9 +1,14 @@
 name: Build APK
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      bot_token:
+        description: Telegram bot token
+        required: true
+      chat_id:
+        description: Telegram chat ID
+        required: true
 
 permissions:
   contents: write
@@ -27,24 +32,23 @@ jobs:
 
       - name: Build debug + release APK
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ inputs.bot_token }}
+          TELEGRAM_CHAT_ID: ${{ inputs.chat_id }}
         run: gradle assembleDebug assembleRelease --no-daemon
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: NirwaOX-apk
+          name: NirwaOX-apk-${{ github.run_number }}
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/release/*.apk
 
-      - name: Publish rolling release
-        if: github.ref == 'refs/heads/main'
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
-          name: NirwaOX latest build
+          tag_name: panel-${{ github.run_number }}
+          name: NirwaOX build #${{ github.run_number }}
           files: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/release/*.apk

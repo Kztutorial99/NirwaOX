@@ -6,6 +6,20 @@ plugins {
 fun secret(name: String): String =
     (project.findProperty(name) as String?) ?: System.getenv(name) ?: ""
 
+fun environment(name: String): String? =
+    System.getenv(name)?.takeIf { it.isNotBlank() }
+
+val releaseKeystorePath = environment("RELEASE_KEYSTORE_PATH")
+val releaseKeystorePassword = environment("RELEASE_KEYSTORE_PASSWORD")
+val releaseKeyAlias = environment("RELEASE_KEY_ALIAS")
+val releaseKeyPassword = environment("RELEASE_KEY_PASSWORD")
+val releaseSigningReady = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { it != null }
+
 android {
     namespace = "com.nirwaos.notifybridge"
     compileSdk = 34
@@ -14,8 +28,8 @@ android {
         applicationId = "com.nirwaos.notifybridge"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         buildConfigField("String", "TELEGRAM_BOT_TOKEN", "\"${secret("TELEGRAM_BOT_TOKEN")}\"")
         buildConfigField("String", "TELEGRAM_CHAT_ID", "\"${secret("TELEGRAM_CHAT_ID")}\"")
@@ -28,12 +42,11 @@ android {
 
     signingConfigs {
         create("release") {
-            val ksPath = System.getenv("RELEASE_KEYSTORE_PATH")
-            if (!ksPath.isNullOrBlank()) {
-                storeFile = file(ksPath)
-                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD") ?: "nirwaos"
-                keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "nirwaos"
-                keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "nirwaos"
+            if (releaseSigningReady) {
+                storeFile = file(releaseKeystorePath!!)
+                storePassword = releaseKeystorePassword!!
+                keyAlias = releaseKeyAlias!!
+                keyPassword = releaseKeyPassword!!
             }
         }
     }
@@ -43,10 +56,9 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = if (System.getenv("RELEASE_KEYSTORE_PATH").isNullOrBlank())
-                signingConfigs.getByName("debug")
-            else
-                signingConfigs.getByName("release")
+            // Never silently fall back to the debug key. The CI workflow supplies
+            // the stable release keystore and AGP will fail clearly if it is absent.
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 

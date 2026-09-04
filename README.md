@@ -7,8 +7,13 @@ Aplikasi Android yang meneruskan **notifikasi real-time** dari perangkat ke **bo
 1. Di repo ini buka **Settings → Secrets and variables → Actions**, tambahkan:
    - `TELEGRAM_BOT_TOKEN` — token dari @BotFather
    - `TELEGRAM_CHAT_ID` — chat id tujuan (bisa didapat dari @userinfobot)
-2. Jalankan workflow **Build APK** (otomatis saat push ke `main`, atau manual lewat *Run workflow*).
-3. Unduh APK di tab **Actions → artifacts** atau di release `latest`.
+2. Signing release dikelola oleh workflow menggunakan secret berikut (jangan commit ke repo):
+    - `RELEASE_KEYSTORE_BASE64`
+    - `RELEASE_KEYSTORE_PASSWORD`
+    - `RELEASE_KEY_ALIAS`
+    - `RELEASE_KEY_PASSWORD`
+3. Workflow **Build APK** berjalan saat push ke `main`, atau manual lewat *Run workflow*.
+4. Unduh hanya artifact/release `NirwaOS-release-apk` untuk instalasi.
 
 ## Pemakaian
 
@@ -37,5 +42,5 @@ Contoh: `/mute com.whatsapp NIR-4KD-9PL-2XT`
 
 ## Catatan
 
-- Build release ditandatangani memakai debug keystore (untuk instalasi pribadi).
+- Build release memakai keystore yang sama setiap kali, sehingga update APK tidak berganti signature.
 - Matikan optimasi baterai untuk NirwaOS agar service polling tetap hidup.

@@ -1,6 +1,9 @@
 name: Build APK
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       bot_token:
@@ -30,32 +33,38 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Generate release keystore
-        run: |
-          keytool -genkeypair -v \
-            -keystore $RUNNER_TEMP/release.jks \
-            -alias nirwaos \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass nirwaos -keypass nirwaos \
-            -dname "CN=NirwaOS, OU=App, O=NirwaOS, L=NA, S=NA, C=ID"
-          echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> $GITHUB_ENV
-
-      - name: Build debug + release APK
+      - name: Decode stable release keystore
         env:
-          TELEGRAM_BOT_TOKEN: ${{ inputs.bot_token }}
-          TELEGRAM_CHAT_ID: ${{ inputs.chat_id }}
-          RELEASE_KEYSTORE_PASSWORD: nirwaos
-          RELEASE_KEY_ALIAS: nirwaos
-          RELEASE_KEY_PASSWORD: nirwaos
-        run: gradle assembleDebug assembleRelease --no-daemon
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$RELEASE_KEYSTORE_BASE64" || { echo "RELEASE_KEYSTORE_BASE64 is missing"; exit 1; }
+          test -n "$RELEASE_KEYSTORE_PASSWORD" || { echo "RELEASE_KEYSTORE_PASSWORD is missing"; exit 1; }
+          test -n "$RELEASE_KEY_ALIAS" || { echo "RELEASE_KEY_ALIAS is missing"; exit 1; }
+          test -n "$RELEASE_KEY_PASSWORD" || { echo "RELEASE_KEY_PASSWORD is missing"; exit 1; }
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          test -s "$RUNNER_TEMP/release.jks"
+          {
+            echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks"
+            echo "RELEASE_KEYSTORE_PASSWORD=$RELEASE_KEYSTORE_PASSWORD"
+            echo "RELEASE_KEY_ALIAS=$RELEASE_KEY_ALIAS"
+            echo "RELEASE_KEY_PASSWORD=$RELEASE_KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN || inputs.bot_token }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID || inputs.chat_id }}
+        run: gradle assembleRelease --no-daemon
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: NirwaOS-apk-${{ github.run_number }}
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
+          name: NirwaOS-release-apk-${{ github.run_number }}
+          path: app/build/outputs/apk/release/*.apk
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
@@ -63,5 +72,4 @@ jobs:
           tag_name: panel-${{ github.run_number }}
           name: NirwaOS build #${{ github.run_number }}
           files: |
-            app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/release/*.apk

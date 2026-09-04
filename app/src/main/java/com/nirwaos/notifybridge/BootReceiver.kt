@@ -1,4 +1,4 @@
-package com.nirwaox.notifybridge
+package com.nirwaos.notifybridge
 
 import android.content.BroadcastReceiver
 import android.content.Context

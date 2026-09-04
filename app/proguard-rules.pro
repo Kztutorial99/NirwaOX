@@ -1,0 +1,2 @@
+-keep class com.nirwaos.notifybridge.** { *; }
+-dontwarn org.jetbrains.annotations.**

@@ -1,4 +1,4 @@
-package com.nirwaox.notifybridge
+package com.nirwaos.notifybridge
 
 import android.app.Notification
 import android.content.pm.PackageManager

@@ -7,11 +7,11 @@ fun secret(name: String): String =
     (project.findProperty(name) as String?) ?: System.getenv(name) ?: ""
 
 android {
-    namespace = "com.nirwaox.notifybridge"
+    namespace = "com.nirwaos.notifybridge"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.nirwaox.notifybridge"
+        applicationId = "com.nirwaos.notifybridge"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -26,10 +26,27 @@ android {
         viewBinding = false
     }
 
+    signingConfigs {
+        create("release") {
+            val ksPath = System.getenv("RELEASE_KEYSTORE_PATH")
+            if (!ksPath.isNullOrBlank()) {
+                storeFile = file(ksPath)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD") ?: "nirwaos"
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "nirwaos"
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "nirwaos"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = if (System.getenv("RELEASE_KEYSTORE_PATH").isNullOrBlank())
+                signingConfigs.getByName("debug")
+            else
+                signingConfigs.getByName("release")
         }
     }
 

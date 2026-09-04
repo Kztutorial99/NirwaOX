@@ -1,4 +1,4 @@
-package com.nirwaox.notifybridge
+package com.nirwaos.notifybridge
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -28,7 +28,7 @@ class TelegramPollingService : Service() {
     private val scope = CoroutineScope(Dispatchers.IO)
 
     companion object {
-        private const val CHANNEL_ID = "nirwaox_service"
+        private const val CHANNEL_ID = "nirwaos_service"
         private const val NOTIF_ID = 1001
 
         fun start(ctx: Context) {
@@ -67,7 +67,7 @@ class TelegramPollingService : Service() {
     private fun buildNotification(): Notification {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val ch = NotificationChannel(CHANNEL_ID, "NirwaOX Service", NotificationManager.IMPORTANCE_MIN)
+            val ch = NotificationChannel(CHANNEL_ID, "NirwaOS Service", NotificationManager.IMPORTANCE_MIN)
             ch.setShowBadge(false)
             nm.createNotificationChannel(ch)
         }
@@ -78,7 +78,7 @@ class TelegramPollingService : Service() {
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             Notification.Builder(this, CHANNEL_ID) else Notification.Builder(this)
         return builder
-            .setContentTitle("NirwaOX aktif")
+            .setContentTitle("NirwaOS aktif")
             .setContentText(Prefs.deviceId(this))
             .setSmallIcon(android.R.drawable.stat_notify_sync)
             .setOngoing(true)
@@ -152,7 +152,7 @@ class TelegramPollingService : Service() {
     }
 
     private fun help(myId: String) = """
-        <b>NirwaOX — $myId</b>
+        <b>NirwaOS — $myId</b>
         Tambahkan ID device di akhir perintah agar hanya perangkat itu yang merespons.
 
         /status — status perangkat

@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NirwaOX"
+rootProject.name = "NirwaOS"
 include(":app")

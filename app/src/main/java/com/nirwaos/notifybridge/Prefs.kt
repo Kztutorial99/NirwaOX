@@ -1,10 +1,10 @@
-package com.nirwaox.notifybridge
+package com.nirwaos.notifybridge
 
 import android.content.Context
 import java.util.UUID
 
 object Prefs {
-    private const val FILE = "nirwaox_prefs"
+    private const val FILE = "nirwaos_prefs"
     private const val KEY_ENABLED = "forward_enabled"
     private const val KEY_MUTED = "muted_packages"
     private const val KEY_OFFSET = "telegram_offset"

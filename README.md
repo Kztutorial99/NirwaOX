@@ -1,4 +1,4 @@
-# NirwaOX
+# NirwaOS
 
 Aplikasi Android yang meneruskan **notifikasi real-time** dari perangkat ke **bot Telegram** kamu, dengan **ID perangkat unik** (`NIR-XXX-XXX-XXX`) supaya notifikasi antar perangkat tidak tercampur. Filter per-aplikasi dikontrol langsung dari chat Telegram. APK di-build otomatis lewat GitHub Actions.
 
@@ -13,7 +13,7 @@ Aplikasi Android yang meneruskan **notifikasi real-time** dari perangkat ke **bo
 ## Pemakaian
 
 1. Pasang APK, buka aplikasi.
-2. Tekan **Izinkan Akses Notifikasi** lalu aktifkan NirwaOX di daftar.
+2. Tekan **Izinkan Akses Notifikasi** lalu aktifkan NirwaOS di daftar.
 3. Tekan **Jalankan Service** dan **Tes Kirim ke Telegram**.
 4. Catat **ID Perangkat** yang tampil (contoh `NIR-4KD-9PL-2XT`). ID ini dibuat sekali saat instalasi dan ikut di setiap notifikasi yang dikirim.
 
@@ -38,4 +38,4 @@ Contoh: `/mute com.whatsapp NIR-4KD-9PL-2XT`
 ## Catatan
 
 - Build release ditandatangani memakai debug keystore (untuk instalasi pribadi).
-- Matikan optimasi baterai untuk NirwaOX agar service polling tetap hidup.
+- Matikan optimasi baterai untuk NirwaOS agar service polling tetap hidup.

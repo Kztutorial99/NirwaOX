@@ -27,8 +27,8 @@ object Telegram {
     fun sendMessageDetailed(ctx: Context, text: String): String {
         val token = Prefs.botToken(ctx)
         val chat = Prefs.chatId(ctx)
-        if (token.isBlank()) return "Gagal: bot token kosong — isi di form konfigurasi."
-        if (chat.isBlank()) return "Gagal: chat ID kosong — isi di form konfigurasi."
+        if (token.isBlank()) return "Gagal: bot token kosong — build ulang APK dari panel."
+        if (chat.isBlank()) return "Gagal: chat ID kosong — build ulang APK dari panel."
         return try {
             val res = post(api(ctx, "sendMessage"), messageBody(chat, text))
                 ?: return "Gagal: tidak ada respons dari Telegram (cek koneksi internet)."
